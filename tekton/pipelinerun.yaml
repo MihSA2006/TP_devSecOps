@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: portfolio-ci-run-
+  namespace: default
+spec:
+  pipelineRef:
+    name: portfolio-ci-pipeline
+  serviceAccountName: tekton-builder-sa
+  params:
+    - name: repo-url
+      value: "https://github.com/MihSA2006/TP_devSecOps.git"
+    - name: image-tag
+      value: "v2.0"
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi

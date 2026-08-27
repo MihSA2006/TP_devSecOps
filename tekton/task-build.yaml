@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-and-push-portfolio
+  namespace: default
+spec:
+  params:
+    - name: image-tag
+      type: string
+      description: "Le tag de l'image Docker à construire"
+      default: "v2.0"
+  workspaces:
+    - name: source
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:latest
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(workspaces.source.path)/My-Portfolio-V2/Dockerfile
+        - --context=$(workspaces.source.path)/My-Portfolio-V2
+        - --destination=mihsa2006/my-portfolio:$(params.image-tag)
+        - --skip-tls-verify
+      volumeMounts:
+        - name: kaniko-secret
+          mountPath: /kaniko/.docker/
+  volumes:
+    - name: kaniko-secret
+      secret:
+        secretName: dockerhub-secret
+        items:
+          - key: .dockerconfigjson
+            path: config.json

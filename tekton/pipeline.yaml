@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: portfolio-ci-pipeline
+  namespace: default
+spec:
+  params:
+    - name: repo-url
+      type: string
+    - name: image-tag
+      type: string
+  workspaces:
+    - name: shared-data
+  tasks:
+    - name: fetch-repo
+      taskRef:
+        name: git-clone
+        kind: Task
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: "main"
+      workspaces:
+        - name: output
+          workspace: shared-data
+    - name: build-image
+      runAfter: [fetch-repo]
+      taskRef:
+        name: build-and-push-portfolio
+      params:
+        - name: image-tag
+          value: $(params.image-tag)
+      workspaces:
+        - name: source
+          workspace: shared-data
